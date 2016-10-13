@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="InvoxService.cs" />
     <Compile Include="Numeros.cs" />
+    <Compile Include="ProcesoMedianoche.cs" />
     <Compile Include="TranscripcionService.svc.cs">
       <DependentUpon>TranscripcionService.svc</DependentUpon>
     </Compile>

@@ -54,7 +54,7 @@ namespace SimpleRESTServiceCRUD
     {
         TranscripcionDAL dal = new TranscripcionDAL();
         //CRUD Operations
-        //1. CREAT
+        //1. CREATE
         public Transcripcion Insert(Transcripcion transcripcion)
         {
             if (transcripcion == null)
@@ -70,7 +70,7 @@ namespace SimpleRESTServiceCRUD
             return dal.SelectAll();
         }
 
-        //3. RETRIEVE /By TranscripcionId
+        //3. RETRIEVE /By IdTranscripcion
         public Transcripcion SelectById(int idTranscripcion)
         {
             return dal.Select(idTranscripcion);
@@ -395,5 +395,10 @@ namespace SimpleRESTServiceCRUD
                 throw;
             }
         }
+    }
+
+    public static class ProcesarPendientes
+    {
+
     }
 }

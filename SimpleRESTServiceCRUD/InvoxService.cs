@@ -37,7 +37,7 @@ namespace SimpleRESTServiceCRUD
             InvoxResult invoxResult = new InvoxResult();
             invoxResult.IdTranscripcion = IdTranscripcion;
 
-            // Simulamos el procesado del archivo empleando entre 1 y 10 segundos.
+            // Simulamos el procesado del audio empleando entre 1 y 10 segundos.
             System.Threading.Thread.Sleep(Numeros.Rnd.Next(1000, 10000));
 
             invoxResult.FechaTranscripcion = DateTime.Now;

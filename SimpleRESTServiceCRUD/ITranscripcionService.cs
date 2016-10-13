@@ -32,7 +32,7 @@ namespace SimpleRESTServiceCRUD
         /// 
         /// </summary>
         /// <param name="login"></param>
-        /// <param name="fecha">Formato {fecha}: YYYYMMDDHHmm-YYYYMMDDHHmm</param>
+        /// <param name="fecha">Formato {fecha}: yyyyMMddHHmm-yyyyMMddHHmm</param>
         /// <returns></returns>
         [OperationContract]
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}/fecha={fecha}")]

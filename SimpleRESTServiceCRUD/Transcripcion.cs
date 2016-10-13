@@ -113,16 +113,24 @@ namespace SimpleRESTServiceCRUD
         private string connString;
         private SqlCommand command;
 
+        /// <summary>
+        /// Constructor por defecto. Usando la cadena de conexión establecida en Web.config
+        /// </summary>
         public TranscripcionDAL() : this(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString)
         {; }
+        /// <summary>
+        /// Constructor usando la cadena de conexión especificada.
+        /// </summary>
+        /// <param name="connString"></param>
         public TranscripcionDAL(string connString)
         {
             this.connString = connString;
         }
         /// <summary>
-        /// Database INSERT Transcripcion
+        /// Inserta un registros con los valores del objeto Transcripcion especificado y devuelve el objeto con el IdTranscripcion asignado.
         /// </summary>
         /// <param name="transcripcion"></param>
+        /// <returns></returns> 
         public Transcripcion Insert(Transcripcion transcripcion)
         {
             try
@@ -156,7 +164,7 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Database UPDATE Transcripcion
+        /// Actualiza el registro con los del objeto Transcripcion especificado según su IdTranscripcion.
         /// </summary>
         /// <param name="transcripcion"></param>
         public void Update(Transcripcion transcripcion)
@@ -188,7 +196,7 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Database DELETE Transcripcion
+        /// Elimina el registro con el IdTranscripcion especificado.
         /// </summary>
         /// <param name="idTranscripcion"></param>
         public void Delete(int idTranscripcion)
@@ -210,7 +218,7 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Database SELECT Transcripcion
+        /// Selecciona el registro con el IdTranscripcion especificado.
         /// </summary>
         /// <param name="ID"></param>
         /// <returns></returns>
@@ -264,9 +272,8 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Database SELECT Transcripcion
+        /// Selecciona todos los registros de la tabla Transcripcion
         /// </summary>
-        /// <param name="ID"></param>
         /// <returns></returns>
         public List<Transcripcion> SelectAll()
         {
@@ -304,9 +311,9 @@ namespace SimpleRESTServiceCRUD
             //}
         }
         /// <summary>
-        /// Database SELECT with filters Transcripcion Estado = Pendiente (0)
+        /// Selecciona los registros pendientes para el envío al servicio de reconocimiento de voz.
         /// </summary>
-        /// <returns>Transcripcion</returns>
+        /// <returns></returns>
         public List<Transcripcion> SelectPendientes()
         {
             try
@@ -315,8 +322,9 @@ namespace SimpleRESTServiceCRUD
 
                 conn = new SqlConnection(connString);
 
-                string sqlSelectString = "SELECT IdTranscripcion, Login, Estado, NombreFichero, Fichero, FechaRecepcion, FechaTranscripcion, TextoTranscripcion FROM Transcripcion WHERE" +
-                    " Estado = @Estado";
+                string sqlSelectString = "SELECT IdTranscripcion, Login, Estado, NombreFichero, Fichero, FechaRecepcion, FechaTranscripcion, TextoTranscripcion FROM Transcripcion" +
+                    " WHERE Estado = @Estado" +
+                    " ORDER BY FechaRecepcion"; // Procesamos los registros pendientes por orden de recepción (FIFO).
                 command = new SqlCommand(sqlSelectString, conn);
                 command.Parameters.Add(new SqlParameter("@Estado", Transcripcion.EstadoTranscripcion.Pendiente));
                 command.Connection.Open();
@@ -345,18 +353,21 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Database SELECT with filters Login FechaRecepcion
+        /// Selecciona los registros del usuario e intervalo de fechas de recepción especificados.
         /// </summary>
-        /// <returns>Transcripcion</returns>
+        /// <param name="login"></param>
+        /// <param name="desdeFechaRecepcion"></param>
+        /// <param name="hastaFechaRecepcion"></param>
+        /// <returns></returns>
         public List<Transcripcion> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
         {
             try
             {
                 List<Transcripcion> lista = new List<Transcripcion>();
-                string sqlSelectString = "SELECT IdTranscripcion, Login, Estado, NombreFichero, Fichero, FechaRecepcion, FechaTranscripcion, TextoTranscripcion FROM Transcripcion WHERE" +
+                string sqlSelectString = "SELECT NombreFichero, FechaRecepcion, Estado, FechaTranscripcion FROM Transcripcion WHERE" +
                     " Login = @Login AND" +
-                    " (@DesdeFechaRecepcion IS NULL OR FechaRecepcion >= @DesdeFechaRecepcion)" +
-                    " (@HastaFechaRecepcion IS NULL OR FechaRecepcion >= @HastaFechaRecepcion)";
+                    " (@DesdeFechaRecepcion IS NULL OR FechaRecepcion >= @DesdeFechaRecepcion) AND" +
+                    " (@HastaFechaRecepcion IS NULL OR FechaRecepcion < @HastaFechaRecepcion)";
 
                 conn = new SqlConnection(connString);
                 command = new SqlCommand(sqlSelectString, conn);
@@ -369,14 +380,14 @@ namespace SimpleRESTServiceCRUD
                 while (reader.Read())
                 {
                     Transcripcion transcripcion = new Transcripcion();
-                    transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
-                    transcripcion.Login = reader["Login"].ToString();
+                    //transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
+                    //transcripcion.Login = reader["Login"].ToString();
                     transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
-                    if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
+                    //if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
                     if (reader["FechaTranscripcion"] != DBNull.Value) { transcripcion.FechaTranscripcion = (DateTime?)reader["FechaTranscripcion"]; }
-                    transcripcion.TextoTranscripcion = reader["TextoTranscripcion"].ToString();
+                    //transcripcion.TextoTranscripcion = reader["TextoTranscripcion"].ToString();
                     lista.Add(transcripcion);
                 }
                 command.Connection.Close();

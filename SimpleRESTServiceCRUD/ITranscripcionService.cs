@@ -13,24 +13,42 @@ namespace SimpleRESTServiceCRUD
     public interface ITranscripcionService
     {
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Xml, UriTemplate = "Transcripciones/")]
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/")]
         List<Transcripcion> GetTranscripcionList();
 
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Xml, UriTemplate = "Transcripciones/pendientes")]
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/pendientes")]
         List<Transcripcion> GetTranscripcionListPendientes();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Xml, UriTemplate = "Transcripciones/login={login};desdefr={desdefr};hastafr={hastafr}")]
-        List<Transcripcion> GetTranscripcionListByLoginFechaRecepcion(string login, string desdefr, string hastafr);
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}")]
+        List<Transcripcion> GetTranscripcionListByLogin(string login);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="login"></param>
+        /// <param name="fecha">Formato {fecha}: YYYYMMDDHHmm-YYYYMMDDHHmm</param>
+        /// <returns></returns>
+        [OperationContract]
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}/fecha={fecha}")]
+        List<Transcripcion> GetTranscripcionListByLoginFechaRecepcion(string login, string fecha);
 
         [OperationContract]
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/{id}")]
         Transcripcion GetTranscripcionById(string id);
 
         [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/{id}")]
-        string AddTranscripcion(Transcripcion Transcripcion, string id);
+        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/login={login}/filename={filename}")]
+        string AddTranscripcion(string login, string filename, byte[] fichero);
+
+        //[OperationContract]
+        //[WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/{id}")]
+        //string AddTranscripcion(Transcripcion Transcripcion, string id);
 
         [OperationContract]
         [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "UpdateTranscripcion/{id}")]

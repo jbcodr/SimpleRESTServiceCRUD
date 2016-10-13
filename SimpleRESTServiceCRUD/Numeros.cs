@@ -24,7 +24,6 @@ namespace SimpleRESTServiceCRUD
             Double,
             Decimal,
         }
-
         private static object ToNumber(TipoNumero tipoNumero, object valor, object defecto)
         {
             if (valor == null || (valor is DBNull)) { return defecto; }
@@ -246,7 +245,6 @@ namespace SimpleRESTServiceCRUD
         {
             return (float)ToNumber(TipoNumero.Single, valor, defecto);
         }
-
         public static bool ToBool(object valor)
         {
             return ToBool(valor, false);
@@ -257,10 +255,14 @@ namespace SimpleRESTServiceCRUD
         }
 
         private static Random rnd = null;
+        /// <summary>
+        /// Instancia para obtención de números aleatorios
+        /// </summary>
         public static Random Rnd
         {
             get { return rnd ?? (rnd = new Random(Guid.NewGuid().GetHashCode())); }
         }
+
         public static void Desordena(ref Object[] array, bool desordenar)
         {
             int rndIndex;

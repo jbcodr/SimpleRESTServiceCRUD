@@ -21,21 +21,21 @@ namespace SimpleRESTServiceCRUD
             Error,
         }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public int IdTranscripcion { get; set; }
-        [DataMember]
+        [DataMember(Order = 2)]
         public string Login { get; set; }
-        [DataMember]
+        [DataMember(Order = 3)]
         public EstadoTranscripcion Estado { get; set; }
-        [DataMember]
+        [DataMember(Order = 4)]
         public string NombreFichero { get; set; }
-        [DataMember]
+        [DataMember(Order = 5)]
         public byte[] Fichero { get; set; }
-        [DataMember]
+        [DataMember(Order = 6)]
         public DateTime FechaRecepcion { get; set; }
-        [DataMember]
+        [DataMember(Order = 7)]
         public DateTime? FechaTranscripcion { get; set; }   // Declaramos como DateTime? para permitir valores null.
-        [DataMember]
+        [DataMember(Order = 8)]
         public string TextoTranscripcion { get; set; }
     }
 
@@ -380,14 +380,10 @@ namespace SimpleRESTServiceCRUD
                 while (reader.Read())
                 {
                     Transcripcion transcripcion = new Transcripcion();
-                    //transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
-                    //transcripcion.Login = reader["Login"].ToString();
                     transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
-                    //if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
                     if (reader["FechaTranscripcion"] != DBNull.Value) { transcripcion.FechaTranscripcion = (DateTime?)reader["FechaTranscripcion"]; }
-                    //transcripcion.TextoTranscripcion = reader["TextoTranscripcion"].ToString();
                     lista.Add(transcripcion);
                 }
                 command.Connection.Close();

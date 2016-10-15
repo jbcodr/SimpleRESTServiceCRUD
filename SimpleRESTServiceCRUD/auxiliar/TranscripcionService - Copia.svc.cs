@@ -27,8 +27,7 @@ namespace SimpleRESTServiceCRUD
             public string ErrorDetails { get; private set; }
         }
 
-        private static readonly int maxFileSize = 5 * 1024 * 1024;
-        private static ITranscripcionRepository repository = new TranscripcionRepository();
+        static ITranscripcionRepository repository = new TranscripcionRepository();
         public List<Transcripcion> GetTranscripcionList()
         {
             return repository.SelectAll();
@@ -42,7 +41,7 @@ namespace SimpleRESTServiceCRUD
         /// </summary>
         /// <param name="login"></param>
         /// <returns></returns>
-        public List<TranscripcionCU2> GetTranscripcionListByLogin(string login)
+        public List<Transcripcion> GetTranscripcionListByLogin(string login)
         {
             return GetTranscripcionListByLoginFechaRecepcion(login, string.Empty);
         }
@@ -55,7 +54,7 @@ namespace SimpleRESTServiceCRUD
         /// -yyyyMMddHHmm (Sin intervalo desde)
         /// yyyyMMddHHmm- (Sin intervalo hasta)</param>
         /// <returns></returns>
-        public List<TranscripcionCU2> GetTranscripcionListByLoginFechaRecepcion(string login, string intervaloFechaRecepcion)
+        public List<Transcripcion> GetTranscripcionListByLoginFechaRecepcion(string login, string intervaloFechaRecepcion)
         {
             DateTime? desdeFecha = null;
             DateTime? hastaFecha = null;
@@ -79,8 +78,12 @@ namespace SimpleRESTServiceCRUD
                 {
                     if (DateTime.TryParseExact(sFechas[1], "yyyyMMddHHmm", null, System.Globalization.DateTimeStyles.None, out tmpfecha))
                     {
-                        // Añadimos un minuto para incluir los segundos posteriores al último minuto.
-                        // Posteriormente haremos que la fecha hasta sea estríctamente inferior para no incluir el siguiente minuto.
+                        // Al recibir el intervalo de fechas para listar las transcripciones, permitimos una precisión de hasta minutos.
+                        // Por tanto hay que tener en cuenta que en el intervalo hasta se incluyan los registros del último minuto:
+                        // Por ejemplo hasta las 23:59h debería incluir los recibidos a las 23h59m59s, pero no los de las 24h00m00s
+                        // Para esto, vamos a añadir un minuto a la consulta, pero haremos que la fecha de recepción sea estríctamente inferior a este parámetro
+                        // para no incuir los registros de las 00:00h del día siguiente, pero sí cualquiera anterior (23h:59m59,999999s)
+
                         hastaFecha = tmpfecha.AddMinutes(1);
                     }
                     else
@@ -94,7 +97,15 @@ namespace SimpleRESTServiceCRUD
                     + "Ejemplo 1: fecha=201609010000-201609302359 // Desde 01/09/2016 0:00 hasta 30-09-2016 23:59\r\n"
                     + "Ejemplo 2: fecha=201609010000-             // Desde 01/09/2016 0:00";
 
-                throw new WebFaultException(System.Net.HttpStatusCode.BadRequest);
+                //var response = WebOperationContext.Current.OutgoingResponse;
+                //response.ContentType = "application/text";
+                //response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                //response.StatusDescription = sError;
+                //response
+                //return null;
+
+                MyCustomErrorDetail customError = new MyCustomErrorDetail("Error al procesar la solicitud", sError);
+                throw new WebFaultException<MyCustomErrorDetail>(customError, System.Net.HttpStatusCode.BadRequest);
             }
             else
             {
@@ -102,19 +113,16 @@ namespace SimpleRESTServiceCRUD
             }
         }
 
-        public string GetTranscripcionById(string id)
+        public Transcripcion GetTranscripcionById(string id)
         {
-            return repository.SelectByIdCU3(Numeros.ToInt(id));
+            return repository.SelectById(Numeros.ToInt(id));
         }
 
         public string AddTranscripcion(string login, string filename, byte[] fichero)
         {
-            if (fichero != null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
-            if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
-
             Transcripcion transcripcion = new Transcripcion();
             transcripcion.Login = login;
-            transcripcion.Estado = EstadoTranscripcion.Pendiente;
+            transcripcion.Estado = Transcripcion.EstadoTranscripcion.Pendiente;
             transcripcion.NombreFichero = filename;
             transcripcion.Fichero = fichero;
             transcripcion.FechaRecepcion = DateTime.Now;
@@ -122,27 +130,11 @@ namespace SimpleRESTServiceCRUD
 
             return "id=" + transcripcion.IdTranscripcion;
         }
-        public string AddTranscripcion(string login, string filename, System.IO.FileStream stream)
-        {
-            if (stream != null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
-
-            // Convertimos Stream a byte[]
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            stream.CopyTo(ms);
-            byte[] fichero = ms.ToArray();
-            if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
-
-            Transcripcion transcripcion = new Transcripcion();
-            transcripcion.Login = login;
-            transcripcion.Estado = EstadoTranscripcion.Pendiente;
-            transcripcion.NombreFichero = filename;
-            transcripcion.Fichero = fichero;
-            transcripcion.FechaRecepcion = DateTime.Now;
-            repository.Insert(transcripcion);
-
-            return "id=" + transcripcion.IdTranscripcion;
-        }
-
+        //public string AddTranscripcion(Transcripcion transcripcion, string id)
+        //{
+        //    Transcripcion newTranscripcion = repository.Insert(transcripcion);
+        //    return "id=" + newTranscripcion.IdTranscripcion;
+        //}
         public string UpdateTranscripcion(Transcripcion transcripcion, string id)
         {
             bool updated = repository.Update(transcripcion);

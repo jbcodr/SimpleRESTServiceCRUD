@@ -20,43 +20,28 @@ namespace SimpleRESTServiceCRUD
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/pendientes")]
         List<Transcripcion> GetTranscripcionListPendientes();
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="login"></param>
-        /// <returns></returns>
         [OperationContract]
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}")]
-        List<Transcripcion> GetTranscripcionListByLogin(string login);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="login"></param>
-        /// <param name="fecha">Formato {fecha}: yyyyMMddHHmm-yyyyMMddHHmm</param>
-        /// <returns></returns>
+        List<TranscripcionCU2> GetTranscripcionListByLogin(string login);
+
         [OperationContract]
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}/fecha={fecha}")]
-        List<Transcripcion> GetTranscripcionListByLoginFechaRecepcion(string login, string fecha);
+        List<TranscripcionCU2> GetTranscripcionListByLoginFechaRecepcion(string login, string fecha);
 
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/{id}")]
-        Transcripcion GetTranscripcionById(string id);
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "GetTranscripcion/{id}")]
+        string GetTranscripcionById(string id);
 
         [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/login={login}/filename={filename}")]
-        string AddTranscripcion(string login, string filename, byte[] fichero);
+        [WebInvoke(Method = "POST", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion?login={login}&filename={filename}")]
+        string AddTranscripcion(string login, string filename, System.IO.FileStream stream);
 
         //[OperationContract]
-        //[WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/{id}")]
-        //string AddTranscripcion(Transcripcion Transcripcion, string id);
+        //[WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "UpdateTranscripcion/{id}")]
+        //string UpdateTranscripcion(Transcripcion Transcripcion, string id);
 
-        [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "UpdateTranscripcion/{id}")]
-        string UpdateTranscripcion(Transcripcion Transcripcion, string id);
-
-        [OperationContract]
-        [WebInvoke(Method = "DELETE", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "DeleteTranscripcion/{id}")]
-        string DeleteTranscripcion(string id);
-
+        //[OperationContract]
+        //[WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "AddTranscripcion/login={login}/filename={filename}")]
+        //string AddTranscripcion(string login, string filename, byte[] fichero);
     }
 }

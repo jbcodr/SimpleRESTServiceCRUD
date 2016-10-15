@@ -69,6 +69,7 @@
     <Compile Include="InvoxService.cs" />
     <Compile Include="Numeros.cs" />
     <Compile Include="ProcesoMedianoche.cs" />
+    <Compile Include="Tarea.cs" />
     <Compile Include="TranscripcionService.svc.cs">
       <DependentUpon>TranscripcionService.svc</DependentUpon>
     </Compile>

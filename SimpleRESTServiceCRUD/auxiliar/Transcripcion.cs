@@ -10,17 +10,17 @@ using System.Data;
 
 namespace SimpleRESTServiceCRUD
 {
-    public enum EstadoTranscripcion
-    {
-        Pendiente,
-        EnProgreso,
-        Realizada,
-        Error,
-    }
-
     [DataContract]
     public class Transcripcion
     {
+        public enum EstadoTranscripcion
+        {
+            Pendiente,
+            EnProceso,
+            Realizada,
+            Error,
+        }
+
         [DataMember(Order = 1)]
         public int IdTranscripcion { get; set; }
         [DataMember(Order = 2)]
@@ -38,30 +38,16 @@ namespace SimpleRESTServiceCRUD
         [DataMember(Order = 8)]
         public string TextoTranscripcion { get; set; }
     }
-    [DataContract]
-    public class TranscripcionCU2
-    {
-        [DataMember(Order = 1)]
-        public string NombreFichero { get; set; }
-        [DataMember(Order = 2)]
-        public DateTime FechaRecepcion { get; set; }
-        [DataMember(Order = 3)]
-        public EstadoTranscripcion Estado { get; set; }
-        [DataMember(Order = 4)]
-        public DateTime? FechaTranscripcion { get; set; }
-    }
 
     public interface ITranscripcionRepository
     {
-        Transcripcion Insert(Transcripcion item);
-        List<TranscripcionCU2> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion);
-        string SelectByIdCU3(int id);
-        List<Transcripcion> SelectPendientes();
-        bool Update(Transcripcion item);
-        bool UpdateCU4ini(int idTranscripcion);
-        bool UpdateCU4fin(int idTranscripcion, bool esError, DateTime fechaTranscripcion, string textoTranscripcion);
         List<Transcripcion> SelectAll();
+        Transcripcion SelectById(int id);
+        List<Transcripcion> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion);
+        List<Transcripcion> SelectPendientes();
+        Transcripcion Insert(Transcripcion item);
         bool Delete(int id);
+        bool Update(Transcripcion item);
     }
 
     public class TranscripcionRepository : ITranscripcionRepository
@@ -89,29 +75,9 @@ namespace SimpleRESTServiceCRUD
         {
             return dal.Select(idTranscripcion);
         }
-        //4. RETRIEVE /By IdTranscripcion
-        public string SelectByIdCU3(int idTranscripcion)
-        {
-            string resultado = string.Empty;
-            Transcripcion transcripcion = dal.Select(idTranscripcion);
-            if (transcripcion == null)
-            { resultado = "Error CU3.FlujoA"; }
-            else
-            {
-                if (transcripcion.Estado == EstadoTranscripcion.Pendiente
-                    || transcripcion.Estado == EstadoTranscripcion.EnProgreso)
-                { resultado = "Error CU3.FlujoB"; }
-                else if (transcripcion.Estado == EstadoTranscripcion.Error)
-                { resultado = "Error CU3.FlujoC"; }
-                else if (transcripcion.Estado == EstadoTranscripcion.Realizada)
-                { resultado = transcripcion.TextoTranscripcion; }
-            }
-
-            return resultado;
-        }
 
         //4. RETRIEVE /By Login FechaRecepcion
-        public List<TranscripcionCU2> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
+        public List<Transcripcion> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
         {
             return dal.SelectByLoginFechaRecepcion(login, desdeFechaRecepcion, hastaFechaRecepcion);
         }
@@ -129,21 +95,6 @@ namespace SimpleRESTServiceCRUD
             { throw new ArgumentNullException("updatedTranscripcion"); }
 
             dal.Update(transcripcion);
-
-            return true;
-        }
-
-        //4. UPDATE
-        public bool UpdateCU4ini(int idTranscripcion)
-        {
-            dal.UpdateCU4ini(idTranscripcion);
-
-            return true;
-        }
-        //4. UPDATE
-        public bool UpdateCU4fin(int idTranscripcion, bool esError, DateTime fechaTranscripcion, string textoTranscripcion)
-        {
-            dal.UpdateCU4fin(idTranscripcion, esError, fechaTranscripcion, textoTranscripcion);
 
             return true;
         }
@@ -245,62 +196,9 @@ namespace SimpleRESTServiceCRUD
             }
         }
         /// <summary>
-        /// Actualiza el registro con los del objeto Transcripcion especificado según su IdTranscripcion.
+        /// Elimina el registro con el IdTranscripcion especificado.
         /// </summary>
         /// <param name="idTranscripcion"></param>
-        public void UpdateCU4ini(int idTranscripcion)
-        {
-            try
-            {
-                string sqlUpdateString = "UPDATE Transcripcion SET Estado = @Estado, WHERE IdTranscripcion = @IdTranscripcion";
-
-                conn = new SqlConnection(connString);
-                command = new SqlCommand(sqlUpdateString, conn);
-                command.Parameters.AddWithValue("IdTranscripcion", idTranscripcion);
-                command.Parameters.AddWithValue("Estado", EstadoTranscripcion.EnProgreso);
-
-                command.Connection.Open();
-                command.ExecuteNonQuery();
-                command.Connection.Close();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-        /// <summary>
-        /// Actualiza el registro con los del objeto Transcripcion especificado según su IdTranscripcion.
-        /// </summary>
-        /// <param name=""></param>
-        /// <param name="idTranscripcion"></param>
-        /// <param name="estado"></param>
-        /// <param name="texto"></param>
-        public void UpdateCU4fin(int idTranscripcion, bool esError, DateTime fechaTranscripcion, string textoTranscripcion)
-        {
-            try
-            {
-                string sqlUpdateString = "UPDATE Transcripcion SET Estado = @Estado, FechaTranscripcion = @FechaTranscripcion, TextoTranscripcion = @TextoTranscripcion WHERE IdTranscripcion = @IdTranscripcion";
-
-                conn = new SqlConnection(connString);
-                command = new SqlCommand(sqlUpdateString, conn);
-                command.Parameters.AddWithValue("IdTranscripcion", idTranscripcion);
-                command.Parameters.AddWithValue("Estado", esError ? EstadoTranscripcion.Error : EstadoTranscripcion.Realizada);
-                command.Parameters.AddWithValue("FechaTranscripcion", fechaTranscripcion);
-                command.Parameters.AddWithValue("TextoTranscripcion", (object)textoTranscripcion ?? DBNull.Value);
-
-                command.Connection.Open();
-                command.ExecuteNonQuery();
-                command.Connection.Close();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-        /// <summary>
-                 /// Elimina el registro con el IdTranscripcion especificado.
-                 /// </summary>
-                 /// <param name="idTranscripcion"></param>
         public void Delete(int idTranscripcion)
         {
             try
@@ -343,7 +241,7 @@ namespace SimpleRESTServiceCRUD
                     transcripcion = new Transcripcion();
                     transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
                     transcripcion.Login = reader["Login"].ToString();
-                    transcripcion.Estado = (EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
+                    transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
                     if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
@@ -395,7 +293,7 @@ namespace SimpleRESTServiceCRUD
                     transcripcion = new Transcripcion();
                     transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
                     transcripcion.Login = reader["Login"].ToString();
-                    transcripcion.Estado = (EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
+                    transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
                     if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
@@ -428,7 +326,7 @@ namespace SimpleRESTServiceCRUD
                     " WHERE Estado = @Estado" +
                     " ORDER BY FechaRecepcion"; // Procesamos los registros pendientes por orden de recepción (FIFO).
                 command = new SqlCommand(sqlSelectString, conn);
-                command.Parameters.Add(new SqlParameter("@Estado", EstadoTranscripcion.Pendiente));
+                command.Parameters.Add(new SqlParameter("@Estado", Transcripcion.EstadoTranscripcion.Pendiente));
                 command.Connection.Open();
 
                 SqlDataReader reader = command.ExecuteReader();
@@ -437,7 +335,7 @@ namespace SimpleRESTServiceCRUD
                     Transcripcion transcripcion = new Transcripcion();
                     transcripcion.IdTranscripcion = Numeros.ToInt(reader["IdTranscripcion"]);
                     transcripcion.Login = reader["Login"].ToString();
-                    transcripcion.Estado = (EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
+                    transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
                     transcripcion.Fichero = (byte[])reader["Fichero"];
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
@@ -461,11 +359,11 @@ namespace SimpleRESTServiceCRUD
         /// <param name="desdeFechaRecepcion"></param>
         /// <param name="hastaFechaRecepcion"></param>
         /// <returns></returns>
-        public List<TranscripcionCU2> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
+        public List<Transcripcion> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
         {
             try
             {
-                List<TranscripcionCU2> lista = new List<TranscripcionCU2>();
+                List<Transcripcion> lista = new List<Transcripcion>();
                 string sqlSelectString = "SELECT NombreFichero, FechaRecepcion, Estado, FechaTranscripcion FROM Transcripcion WHERE" +
                     " Login = @Login AND" +
                     " (@DesdeFechaRecepcion IS NULL OR FechaRecepcion >= @DesdeFechaRecepcion) AND" +
@@ -481,8 +379,8 @@ namespace SimpleRESTServiceCRUD
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    TranscripcionCU2 transcripcion = new TranscripcionCU2();
-                    transcripcion.Estado = (EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
+                    Transcripcion transcripcion = new Transcripcion();
+                    transcripcion.Estado = (Transcripcion.EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
                     if (reader["FechaTranscripcion"] != DBNull.Value) { transcripcion.FechaTranscripcion = (DateTime?)reader["FechaTranscripcion"]; }

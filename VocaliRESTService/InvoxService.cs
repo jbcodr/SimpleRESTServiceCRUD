@@ -6,7 +6,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-namespace SimpleRESTServiceCRUD
+namespace VocaliRESTService
 {
     /// <summary>
     /// Mock Up del servicio Invox Medical. Un método estático devolverá un texto predefinido entre 4 posibles

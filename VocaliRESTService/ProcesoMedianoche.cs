@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Web;
 
-namespace SimpleRESTServiceCRUD
+namespace VocaliRESTService
 {
     public class TareaTranscripcion : Tarea
     {

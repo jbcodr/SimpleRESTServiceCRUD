@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SimpleRESTServiceCRUD
+namespace VocaliRESTService
 {
     /// <summary>
     /// Representa una tarea que se ejecuta de forma asíncrona.

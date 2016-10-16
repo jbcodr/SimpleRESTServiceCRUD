@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimpleRESTServiceCRUD</RootNamespace>
-    <AssemblyName>SimpleRESTServiceCRUD</AssemblyName>
+    <RootNamespace>VocaliRESTService</RootNamespace>
+    <AssemblyName>VocaliRESTService</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
     <UseIISExpress>true</UseIISExpress>
@@ -66,10 +66,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auxiliar\Log.cs" />
     <Compile Include="InvoxService.cs" />
-    <Compile Include="Numeros.cs" />
+    <Compile Include="Auxiliar\Numeros.cs" />
     <Compile Include="ProcesoMedianoche.cs" />
-    <Compile Include="Tarea.cs" />
+    <Compile Include="Auxiliar\Tarea.cs" />
     <Compile Include="TranscripcionService.svc.cs">
       <DependentUpon>TranscripcionService.svc</DependentUpon>
     </Compile>
@@ -81,6 +82,7 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\PublishProfiles\Javier.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

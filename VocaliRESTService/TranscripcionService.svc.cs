@@ -7,7 +7,7 @@ using System.ServiceModel.Web;
 using System.Text;
 using System.Web.Services.Description;
 
-namespace SimpleRESTServiceCRUD
+namespace VocaliRESTService
 {
     public class TranscripcionService : ITranscripcionService
     {
@@ -29,6 +29,8 @@ namespace SimpleRESTServiceCRUD
 
         private static readonly int maxFileSize = 5 * 1024 * 1024;
         private static ITranscripcionRepository repository = new TranscripcionRepository();
+        internal static Log log = new Log();
+        
         public List<Transcripcion> GetTranscripcionList()
         {
             return repository.SelectAll();
@@ -102,7 +104,7 @@ namespace SimpleRESTServiceCRUD
             }
         }
 
-        public string GetTranscripcionById(string id)
+        public TranscripcionCU3 GetTranscripcionById(string id)
         {
             return repository.SelectByIdCU3(Numeros.ToInt(id));
         }

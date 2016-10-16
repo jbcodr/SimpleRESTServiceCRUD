@@ -1,1 +1,0 @@
-﻿<%@ ServiceHost Language="C#" Debug="true" Service="SimpleRESTServiceCRUD.TranscripcionService" CodeBehind="TranscripcionService.svc.cs" %>

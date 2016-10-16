@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Data.SqlClient;
 using System.Data;
 
-namespace SimpleRESTServiceCRUD
+namespace VocaliRESTService
 {
     public enum EstadoTranscripcion
     {
@@ -37,6 +37,12 @@ namespace SimpleRESTServiceCRUD
         public DateTime? FechaTranscripcion { get; set; }   // Declaramos como DateTime? para permitir valores null.
         [DataMember(Order = 8)]
         public string TextoTranscripcion { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Transcripcion {{IdTranscripcion: {0}, Login: {1}, Estado: {2}, NombreFichero: {3}, FechaRecepcion: {4}}}",
+                IdTranscripcion, Login, Estado, NombreFichero, FechaRecepcion);
+        }
     }
     [DataContract]
     public class TranscripcionCU2
@@ -50,12 +56,19 @@ namespace SimpleRESTServiceCRUD
         [DataMember(Order = 4)]
         public DateTime? FechaTranscripcion { get; set; }
     }
-
+    [DataContract]
+    public class TranscripcionCU3
+    {
+        [DataMember(Order = 1)]
+        public string Error { get; set; }
+        [DataMember(Order = 2)]
+        public string TextoTranscripcion { get; set; }
+    }
     public interface ITranscripcionRepository
     {
         Transcripcion Insert(Transcripcion item);
         List<TranscripcionCU2> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion);
-        string SelectByIdCU3(int id);
+        TranscripcionCU3 SelectByIdCU3(int id);
         List<Transcripcion> SelectPendientes();
         bool Update(Transcripcion item);
         bool UpdateCU4ini(int idTranscripcion);
@@ -90,24 +103,32 @@ namespace SimpleRESTServiceCRUD
             return dal.Select(idTranscripcion);
         }
         //4. RETRIEVE /By IdTranscripcion
-        public string SelectByIdCU3(int idTranscripcion)
+        public TranscripcionCU3 SelectByIdCU3(int idTranscripcion)
         {
-            string resultado = string.Empty;
+            TranscripcionCU3 transcripcionCU3 = new TranscripcionCU3();
             Transcripcion transcripcion = dal.Select(idTranscripcion);
             if (transcripcion == null)
-            { resultado = "Error CU3.FlujoA"; }
+            {
+                transcripcionCU3.Error = "ErrCU3.FljA: Transcripción no encontrada.";
+            }
             else
             {
                 if (transcripcion.Estado == EstadoTranscripcion.Pendiente
                     || transcripcion.Estado == EstadoTranscripcion.EnProgreso)
-                { resultado = "Error CU3.FlujoB"; }
+                {
+                    transcripcionCU3.Error = "ErrCU3.FljB: Transcripción no procesada.";
+                }
                 else if (transcripcion.Estado == EstadoTranscripcion.Error)
-                { resultado = "Error CU3.FlujoC"; }
+                {
+                    transcripcionCU3.Error = "ErrCU3.FljC: Error al procesar la transcripción.";
+                }
                 else if (transcripcion.Estado == EstadoTranscripcion.Realizada)
-                { resultado = transcripcion.TextoTranscripcion; }
+                {
+                    transcripcionCU3.TextoTranscripcion = transcripcion.TextoTranscripcion;
+                }
             }
 
-            return resultado;
+            return transcripcionCU3;
         }
 
         //4. RETRIEVE /By Login FechaRecepcion
@@ -209,6 +230,9 @@ namespace SimpleRESTServiceCRUD
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.Insert:\r\n{0}\r\n{1}"
+                    , transcripcion
+                    , ex.Message)); 
                 throw;
             }
         }

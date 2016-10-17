@@ -28,7 +28,7 @@ namespace VocaliRESTServiceTest
         public void TestMethodSelectCU3()
         {
             VocaliRESTService.TranscripcionService service = new VocaliRESTService.TranscripcionService();
-            service.GetTranscripcionById("4");
+            service.GetTranscripcionById("5");
         }
     }
 }

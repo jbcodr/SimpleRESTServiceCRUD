@@ -13,15 +13,15 @@ namespace VocaliRESTService
     {
         private string filepath;
 
-        public Log(string filepath = "")
+        public Log(string filepath = "", bool recreate = false)
         {
-            if (string.IsNullOrEmpty(filepath)) { filepath = @"C:\logs\RESTServiceTest.log"; }
-            if (File.Exists(filepath)) { File.Delete(filepath); }
+            if (string.IsNullOrEmpty(filepath)) { this.filepath = @"C:\logs\VocaliRESTService.log"; }
+            if (recreate && File.Exists(filepath)) { File.Delete(filepath); }
         }
 
         public void Append(string texto)
         {
-            File.AppendAllText(filepath, texto);
+            File.AppendAllText(filepath, string.Format("{0:dd.MM.yyyy HH:mm:ss.fff}: {1}\r\n", DateTime.Now, texto));
         }
 
         public static Log log = null;

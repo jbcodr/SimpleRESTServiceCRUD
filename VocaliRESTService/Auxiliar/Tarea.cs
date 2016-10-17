@@ -118,7 +118,7 @@ namespace VocaliRESTService
         #region Eventos y Delegados
 
         public event EstadoChangedEventHandler EstadoChanged;
-        public delegate void EstadoChangedEventHandler(Tarea sender, EventArgs e);
+        public delegate void EstadoChangedEventHandler(Tarea sender, Tarea.EstadoChangedEventArgs e);
 
         #endregion
 
@@ -151,7 +151,7 @@ namespace VocaliRESTService
 
         private void tarea_EstadoChanged(Tarea sender, Tarea.EstadoChangedEventArgs e)
         {
-            EstadoChanged?.Invoke(sender, null);
+            EstadoChanged?.Invoke(sender, e);
             if (e.EstadoNew == Tarea.EstadoTareaEnum.Finalizada || e.EstadoNew == Tarea.EstadoTareaEnum.Cancelada)
             {
                 lock (thisLock)

@@ -64,6 +64,7 @@ namespace VocaliRESTService
         [DataMember(Order = 2)]
         public string TextoTranscripcion { get; set; }
     }
+
     public interface ITranscripcionRepository
     {
         Transcripcion Insert(Transcripcion item);
@@ -80,29 +81,40 @@ namespace VocaliRESTService
     public class TranscripcionRepository : ITranscripcionRepository
     {
         TranscripcionDAL dal = new TranscripcionDAL();
+
         //CRUD Operations
-        //1. CREATE
+
+        /// <summary>
+        /// 1. CREATE
+        /// </summary>
+        /// <param name="transcripcion"></param>
+        /// <returns></returns>
         public Transcripcion Insert(Transcripcion transcripcion)
         {
-            if (transcripcion == null)
-            { throw new ArgumentNullException("transcripcion"); }
-
-            dal.Insert(transcripcion);
-            return transcripcion;
+            return dal.Insert(transcripcion);
         }
-
-        //2. RETRIEVE /ALL
+        /// <summary>
+        /// 2a. RETRIEVE /ALL
+        /// </summary>
+        /// <returns></returns>
         public List<Transcripcion> SelectAll()
         {
             return dal.SelectAll();
         }
-
-        //3. RETRIEVE /By IdTranscripcion
+        /// <summary>
+        /// 2b. RETRIEVE /By IdTranscripcion
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
+        /// <returns></returns>
         public Transcripcion SelectById(int idTranscripcion)
         {
             return dal.Select(idTranscripcion);
         }
-        //4. RETRIEVE /By IdTranscripcion
+        /// <summary>
+        /// 2c. RETRIEVE /By IdTranscripcion
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
+        /// <returns></returns>
         public TranscripcionCU3 SelectByIdCU3(int idTranscripcion)
         {
             TranscripcionCU3 transcripcionCU3 = new TranscripcionCU3();
@@ -130,20 +142,30 @@ namespace VocaliRESTService
 
             return transcripcionCU3;
         }
-
-        //4. RETRIEVE /By Login FechaRecepcion
+        /// <summary>
+        /// 2d. RETRIEVE /By Login FechaRecepcion
+        /// </summary>
+        /// <param name="login"></param>
+        /// <param name="desdeFechaRecepcion"></param>
+        /// <param name="hastaFechaRecepcion"></param>
+        /// <returns></returns>
         public List<TranscripcionCU2> SelectByLoginFechaRecepcion(string login, DateTime? desdeFechaRecepcion, DateTime? hastaFechaRecepcion)
         {
             return dal.SelectByLoginFechaRecepcion(login, desdeFechaRecepcion, hastaFechaRecepcion);
         }
-
-        //5. RETRIEVE /By Estado Pendientes
+        /// <summary>
+        /// 2e. RETRIEVE /By Estado Pendientes
+        /// </summary>
+        /// <returns></returns>
         public List<Transcripcion> SelectPendientes()
         {
             return dal.SelectPendientes();
         }
-
-        //4. UPDATE
+        /// <summary>
+        /// 3a. UPDATE
+        /// </summary>
+        /// <param name="transcripcion"></param>
+        /// <returns></returns>
         public bool Update(Transcripcion transcripcion)
         {
             if (transcripcion == null)
@@ -153,23 +175,40 @@ namespace VocaliRESTService
 
             return true;
         }
-
-        //4. UPDATE
+        /// <summary>
+        /// 3b. UPDATE
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
+        /// <returns></returns>
         public bool UpdateCU4ini(int idTranscripcion)
         {
             dal.UpdateCU4ini(idTranscripcion);
+            Log.AppendText(string.Format("OK: UpdateCU4ini(int idTranscripcion:{0})",
+                idTranscripcion));
 
             return true;
         }
-        //4. UPDATE
+        /// <summary>
+        /// 3c. UPDATE
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
+        /// <param name="esError"></param>
+        /// <param name="fechaTranscripcion"></param>
+        /// <param name="textoTranscripcion"></param>
+        /// <returns></returns>
         public bool UpdateCU4fin(int idTranscripcion, bool esError, DateTime fechaTranscripcion, string textoTranscripcion)
         {
             dal.UpdateCU4fin(idTranscripcion, esError, fechaTranscripcion, textoTranscripcion);
+            Log.AppendText(string.Format("OK: UpdateCU4fin(int idTranscripcion:{0}, bool esError:{1}, DateTime fechaTranscripcion:{2}, string textoTranscripcion:{3})",
+                idTranscripcion, esError, fechaTranscripcion, textoTranscripcion));
 
             return true;
         }
-
-        //5. DELETE
+        /// <summary>
+        /// 4. DELETE
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
+        /// <returns></returns>
         public bool Delete(int idTranscripcion)
         {
             dal.Delete(idTranscripcion);
@@ -179,15 +218,25 @@ namespace VocaliRESTService
 
     public class TranscripcionDAL
     {
-        private SqlConnection conn;
+        private readonly string connStringBase = @"Data Source=.\NCS_2008;Initial Catalog=Company;Integrated Security=True";
         private string connString;
+        private SqlConnection conn;
         private SqlCommand command;
 
         /// <summary>
         /// Constructor por defecto. Usando la cadena de conexión establecida en Web.config
         /// </summary>
-        public TranscripcionDAL() : this(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString)
-        {; }
+        public TranscripcionDAL()
+        {
+            try
+            {
+                connString = System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+            }
+            catch
+            {
+                connString = connStringBase;
+            }
+        }
         /// <summary>
         /// Constructor usando la cadena de conexión especificada.
         /// </summary>
@@ -232,7 +281,7 @@ namespace VocaliRESTService
             {
                 Log.AppendText(string.Format("Error TranscripcionDAL.Insert:\r\n{0}\r\n{1}"
                     , transcripcion
-                    , ex.Message)); 
+                    , ex.Message));
                 throw;
             }
         }
@@ -265,6 +314,9 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.Update:\r\n{0}\r\n{1}"
+                    , transcripcion
+                    , ex.Message));
                 throw;
             }
         }
@@ -276,7 +328,7 @@ namespace VocaliRESTService
         {
             try
             {
-                string sqlUpdateString = "UPDATE Transcripcion SET Estado = @Estado, WHERE IdTranscripcion = @IdTranscripcion";
+                string sqlUpdateString = "UPDATE Transcripcion SET Estado = @Estado WHERE IdTranscripcion = @IdTranscripcion";
 
                 conn = new SqlConnection(connString);
                 command = new SqlCommand(sqlUpdateString, conn);
@@ -289,6 +341,9 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.UpdateCU4ini:\r\nid:{0}\r\n{1}"
+                    , idTranscripcion
+                    , ex.Message));
                 throw;
             }
         }
@@ -318,13 +373,16 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.UpdateCU4ini:\r\nid:{0}, err:{1}, fechatr:{2}, textotr:{3}\r\n{4}"
+                    , idTranscripcion, esError, fechaTranscripcion, textoTranscripcion
+                    , ex.Message));
                 throw;
             }
         }
         /// <summary>
-                 /// Elimina el registro con el IdTranscripcion especificado.
-                 /// </summary>
-                 /// <param name="idTranscripcion"></param>
+        /// Elimina el registro con el IdTranscripcion especificado.
+        /// </summary>
+        /// <param name="idTranscripcion"></param>
         public void Delete(int idTranscripcion)
         {
             try
@@ -340,6 +398,9 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.Delete:\r\nid:{0}\r\n{1}"
+                    , idTranscripcion
+                    , ex.Message));
                 throw;
             }
         }
@@ -376,24 +437,13 @@ namespace VocaliRESTService
                 }
                 command.Connection.Close();
 
-                //SqlDataReader dataReader = command.ExecuteReader();
-                //DataTable dt = new DataTable("Table1");
-                //if (dataReader != null) { dt.Load(dataReader); }
-                //command.Connection.Close();
-                //if (dt.Rows.Count > 0)
-                //{
-                //    DataRow dr = dt.Rows[0];
-                //    transcripcion = new Transcripcion();
-                //    transcripcion.IdTranscripcion = Numeros.ToInt(dr["IdTranscripcion"]);
-                //    transcripcion.Login = dr["Login"].ToString();
-                //    transcripcion.Fichero = (byte[])dr["Fichero"];
-
-                //}
-
                 return transcripcion;
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.Select:\r\nid:{0}\r\n{1}"
+                    , idTranscripcion
+                    , ex.Message));
                 throw;
             }
         }
@@ -403,7 +453,7 @@ namespace VocaliRESTService
         /// <returns></returns>
         public List<Transcripcion> SelectAll()
         {
-            //try
+            try
             {
                 List<Transcripcion> lista = new List<Transcripcion>();
                 string sqlSelectString = "SELECT IdTranscripcion, Login, Estado, NombreFichero, Fichero, FechaRecepcion, FechaTranscripcion, TextoTranscripcion FROM Transcripcion";
@@ -431,10 +481,12 @@ namespace VocaliRESTService
 
                 return lista;
             }
-            //catch (Exception ex)
-            //{
-            //    throw;
-            //}
+            catch (Exception ex)
+            {
+                Log.AppendText(string.Format("Error TranscripcionDAL.SelectAll:\r\n{0}"
+                    , ex.Message));
+                throw;
+            }
         }
         /// <summary>
         /// Selecciona los registros pendientes para el envío al servicio de reconocimiento de voz.
@@ -463,9 +515,9 @@ namespace VocaliRESTService
                     transcripcion.Login = reader["Login"].ToString();
                     transcripcion.Estado = (EstadoTranscripcion)Numeros.ToInt(reader["Estado"]);
                     transcripcion.NombreFichero = reader["NombreFichero"].ToString();
-                    transcripcion.Fichero = (byte[])reader["Fichero"];
+                    if (reader["Fichero"] != DBNull.Value) { transcripcion.Fichero = (byte[])reader["Fichero"]; }
                     transcripcion.FechaRecepcion = (DateTime)reader["FechaRecepcion"];
-                    transcripcion.FechaTranscripcion = (DateTime?)reader["FechaTranscripcion"];
+                    if (reader["FechaTranscripcion"] != DBNull.Value) { transcripcion.FechaTranscripcion = (DateTime?)reader["FechaTranscripcion"]; }
                     transcripcion.TextoTranscripcion = reader["TextoTranscripcion"].ToString();
                     lista.Add(transcripcion);
                 }
@@ -475,6 +527,8 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.SelectPendientes:\r\n{0}"
+                    , ex.Message));
                 throw;
             }
         }
@@ -518,6 +572,9 @@ namespace VocaliRESTService
             }
             catch (Exception ex)
             {
+                Log.AppendText(string.Format("Error TranscripcionDAL.SelectByLoginFechaRecepcion:\r\nlogin:{0}, desdefecha:{1}, hastafecha:{2}\r\n{3}"
+                    , login, desdeFechaRecepcion, hastaFechaRecepcion
+                    , ex.Message));
                 throw;
             }
         }

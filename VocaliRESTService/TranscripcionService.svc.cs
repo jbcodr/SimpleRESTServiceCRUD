@@ -11,33 +11,20 @@ namespace VocaliRESTService
 {
     public class TranscripcionService : ITranscripcionService
     {
-        [DataContract]
-        public class MyCustomErrorDetail
-        {
-            public MyCustomErrorDetail(string errorInfo, string errorDetails)
-            {
-                ErrorInfo = errorInfo;
-                ErrorDetails = errorDetails;
-            }
-
-            [DataMember]
-            public string ErrorInfo { get; private set; }
-
-            [DataMember]
-            public string ErrorDetails { get; private set; }
-        }
-
         private static readonly int maxFileSize = 5 * 1024 * 1024;
         private static ITranscripcionRepository repository = new TranscripcionRepository();
-        internal static Log log = new Log();
-        
+
         public List<Transcripcion> GetTranscripcionList()
         {
-            return repository.SelectAll();
+            List<Transcripcion> lista = repository.SelectAll();
+            Log.AppendText("OK: GetTranscripcionList()");
+            return lista;
         }
         public List<Transcripcion> GetTranscripcionListPendientes()
         {
-            return repository.SelectPendientes();
+            List<Transcripcion> lista = repository.SelectPendientes();
+            Log.AppendText("OK: GetTranscripcionListPendientes()");
+            return lista;
         }
         /// <summary>
         /// Recibe el listado por login.
@@ -46,7 +33,10 @@ namespace VocaliRESTService
         /// <returns></returns>
         public List<TranscripcionCU2> GetTranscripcionListByLogin(string login)
         {
-            return GetTranscripcionListByLoginFechaRecepcion(login, string.Empty);
+            List<TranscripcionCU2> lista = GetTranscripcionListByLoginFechaRecepcion(login, string.Empty);
+            Log.AppendText(string.Format("OK: GetTranscripcionListByLogin(string login:{0})",
+                login));
+            return lista;
         }
         /// <summary>
         /// Recibe el listado por login e intervalo de fechas de recepción.
@@ -95,54 +85,61 @@ namespace VocaliRESTService
                 sError = "El intervalo de fechas especificado es incorrecto. Use el formato: fecha=[yyyyMMddHHmm]-[yyyyMMddHHmm]\r\n"
                     + "Ejemplo 1: fecha=201609010000-201609302359 // Desde 01/09/2016 0:00 hasta 30-09-2016 23:59\r\n"
                     + "Ejemplo 2: fecha=201609010000-             // Desde 01/09/2016 0:00";
-
+                Log.AppendText(string.Format("Error: GetTranscripcionListByLoginFechaRecepcion(string login:{0}, string intervaloFechaRecepcion:{1})\r\n{2}",
+                    login, intervaloFechaRecepcion, sError));
                 throw new WebFaultException(System.Net.HttpStatusCode.BadRequest);
             }
             else
             {
-                return repository.SelectByLoginFechaRecepcion(login, desdeFecha, hastaFecha);
+                List<TranscripcionCU2> lista = repository.SelectByLoginFechaRecepcion(login, desdeFecha, hastaFecha);
+                Log.AppendText(string.Format("OK: GetTranscripcionListByLoginFechaRecepcion(string login:{0}, string intervaloFechaRecepcion:{1})",
+                    login, intervaloFechaRecepcion));
+                return lista;
             }
         }
 
         public TranscripcionCU3 GetTranscripcionById(string id)
         {
-            return repository.SelectByIdCU3(Numeros.ToInt(id));
+            TranscripcionCU3 transcripcionCU3 = repository.SelectByIdCU3(Numeros.ToInt(id));
+            Log.AppendText(string.Format("OK: GetTranscripcionById(string id:{0})",
+                id));
+            return transcripcionCU3;
         }
 
         public string AddTranscripcion(string login, string filename, byte[] fichero)
         {
-            if (fichero != null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
-            if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+            bool error = false;
+            string mensaje = string.Empty;
+            if (fichero == null)
+            {
+                error = true;
+                mensaje = "Error CU1: Fichero null";
+            }
 
-            Transcripcion transcripcion = new Transcripcion();
-            transcripcion.Login = login;
-            transcripcion.Estado = EstadoTranscripcion.Pendiente;
-            transcripcion.NombreFichero = filename;
-            transcripcion.Fichero = fichero;
-            transcripcion.FechaRecepcion = DateTime.Now;
-            repository.Insert(transcripcion);
+            if (!error && fichero.Length > maxFileSize)
+            {
+                error = true;
+                mensaje = string.Format("Error CU1: Fichero excede capacidad máxima de 5MB ({0:0.00}MB)",
+                    ((float)fichero.Length / (1024 * 1024)));
+            }
 
-            return "id=" + transcripcion.IdTranscripcion;
-        }
-        public string AddTranscripcion(string login, string filename, System.IO.FileStream stream)
-        {
-            if (stream != null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+            if (!error)
+            {
+                Transcripcion transcripcion = new Transcripcion();
+                transcripcion.Login = login;
+                transcripcion.Estado = EstadoTranscripcion.Pendiente;
+                transcripcion.NombreFichero = filename;
+                transcripcion.Fichero = fichero;
+                transcripcion.FechaRecepcion = DateTime.Now;
+                repository.Insert(transcripcion);
 
-            // Convertimos Stream a byte[]
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            stream.CopyTo(ms);
-            byte[] fichero = ms.ToArray();
-            if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+                Log.AppendText(string.Format("OK: AddTranscripcion(login:{0}, string filename:{1}, byte[] fichero)",
+                    login, fichero));
+                mensaje = string.Format("Fichero registrado satisfactoriamente (id={0})",
+                    transcripcion.IdTranscripcion);
+            }
 
-            Transcripcion transcripcion = new Transcripcion();
-            transcripcion.Login = login;
-            transcripcion.Estado = EstadoTranscripcion.Pendiente;
-            transcripcion.NombreFichero = filename;
-            transcripcion.Fichero = fichero;
-            transcripcion.FechaRecepcion = DateTime.Now;
-            repository.Insert(transcripcion);
-
-            return "id=" + transcripcion.IdTranscripcion;
+            return mensaje;
         }
 
         public string UpdateTranscripcion(Transcripcion transcripcion, string id)
@@ -162,5 +159,49 @@ namespace VocaliRESTService
             else
             { return "Unable to delete Transcripcion with id = " + id; }
         }
+
+        #region Código comentado
+
+        //public string AddTranscripcion(string login, string filename, System.IO.FileStream stream)
+        //{
+        //    if (stream != null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+
+        //    // Convertimos Stream a byte[]
+        //    System.IO.MemoryStream ms = new System.IO.MemoryStream();
+        //    stream.CopyTo(ms);
+        //    byte[] fichero = ms.ToArray();
+        //    if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+
+        //    Transcripcion transcripcion = new Transcripcion();
+        //    transcripcion.Login = login;
+        //    transcripcion.Estado = EstadoTranscripcion.Pendiente;
+        //    transcripcion.NombreFichero = filename;
+        //    transcripcion.Fichero = fichero;
+        //    transcripcion.FechaRecepcion = DateTime.Now;
+        //    repository.Insert(transcripcion);
+
+        //    return "id=" + transcripcion.IdTranscripcion;
+        //}
+
+        //[DataContract]
+        //public class MyCustomErrorDetail
+        //{
+        //    public MyCustomErrorDetail(string errorInfo, string errorDetails)
+        //    {
+        //        ErrorInfo = errorInfo;
+        //        ErrorDetails = errorDetails;
+        //    }
+
+        //    [DataMember]
+        //    public string ErrorInfo { get; private set; }
+
+        //    [DataMember]
+        //    public string ErrorDetails { get; private set; }
+        //}
+
+        //if (fichero == null) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+        //if (fichero.Length > maxFileSize) { throw new WebFaultException(System.Net.HttpStatusCode.BadRequest); }
+
+        #endregion
     }
 }

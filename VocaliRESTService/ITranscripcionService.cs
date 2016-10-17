@@ -17,7 +17,7 @@ namespace VocaliRESTService
         List<Transcripcion> GetTranscripcionList();
 
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/pendientes")]
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/Pendientes")]
         List<Transcripcion> GetTranscripcionListPendientes();
 
         [OperationContract]
@@ -25,7 +25,7 @@ namespace VocaliRESTService
         List<TranscripcionCU2> GetTranscripcionListByLogin(string login);
 
         [OperationContract]
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}&fechas={fechas}")]
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/login={login}/fechas={fechas}")]
         List<TranscripcionCU2> GetTranscripcionListByLoginFechaRecepcion(string login, string fechas);
 
         [OperationContract]
@@ -33,11 +33,11 @@ namespace VocaliRESTService
         TranscripcionCU3 GetTranscripcionById(string id);
 
         [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/Add?login={login}/filename={filename}")]
+        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/Add?login={login}&filename={filename}")]
         string AddTranscripcion(string login, string filename, byte[] fichero);
 
         [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "UpdateTranscripcion/{id}")]
+        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, UriTemplate = "Transcripciones/Update?id={id}")]
         string UpdateTranscripcion(Transcripcion Transcripcion, string id);
 
 
